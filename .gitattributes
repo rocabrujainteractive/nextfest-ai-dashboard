@@ -1,0 +1,3 @@
+# keep the published dataset byte-identical so MANIFEST.sha256 stays valid on any OS
+docs/data/games.json -text
+MANIFEST.sha256 text eol=lf

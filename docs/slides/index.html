@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Next Fest e IA">
+<title>Next Fest e IA · diapositivas verticales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  /* Identidad: fondo marino, panel rosa, texto crema, acentos cian/amarillo/lila, marcos HUD con esquinas cortadas. */
+  :root {
+    --navy: #0a0a2c; --pink: #ee2a64; --cream: #f2ead8; --cyan: #35c4f2;
+    --yellow: #f6b82e; --lilac: #c98cc0; --muted: #a8a4d4; --on-pink: #f2ead8;
+    --display: "Unbounded", "Arial Black", Impact, sans-serif;
+    --text: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { background: #04041a; color: var(--cream); font-family: var(--text); overflow: hidden; position: fixed; inset: 0;
+         overscroll-behavior: none; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+
+  #stage { position: absolute; left: 50%; top: 0; width: 1080px; height: 1920px; transform-origin: top left; }
+  .slide {
+    position: absolute; inset: 0; background: var(--navy); overflow: hidden; visibility: hidden;
+    display: flex; flex-direction: column; justify-content: center; gap: 44px;
+    padding: 230px 90px 540px;
+  }
+  .slide.on { visibility: visible; }
+
+  /* Esquina cortada arriba a la izquierda y abajo a la derecha, como los paneles del póster */
+  .cut { --c: 52px; clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+  .frame { background: var(--cyan); padding: 4px; }
+  .frame > .in { background: var(--navy); clip-path: polygon(calc(var(--c) - 1.6px) 0, 100% 0, 100% calc(100% - var(--c) + 1.6px), calc(100% - var(--c) + 1.6px) 100%, 0 100%, 0 calc(var(--c) - 1.6px)); height: 100%; }
+  .pink { background: var(--pink); padding: 54px 56px; position: relative; --c: 64px; }
+  .pink::after { content: ""; position: absolute; right: 0; top: 0; width: 12px; height: 44%; background: var(--cyan); }
+  .lilac { background: var(--lilac); color: var(--navy); padding: 46px 52px 46px 92px; position: relative; --c: 56px; }
+  .lilac::before { content: ""; position: absolute; left: 34px; top: 46px; bottom: 46px; width: 28px;
+    background: repeating-linear-gradient(180deg, var(--yellow) 0 14px, transparent 14px 28px); }
+
+  .pink .ttl, .pink .num { color: var(--on-pink); }
+  .kicker { font-family: var(--display); font-weight: 600; font-size: 30px; letter-spacing: .14em; text-transform: uppercase; color: var(--yellow); }
+  .ttl { font-family: var(--display); font-weight: 800; text-transform: uppercase; color: var(--cream); line-height: 1.12; letter-spacing: -.01em; }
+  .ttl.xl { font-size: 84px; }
+  .ttl.lg { font-size: 62px; }
+  .band { display: block; width: fit-content; margin-top: 14px; padding: 4px 18px 4px 0; background: linear-gradient(90deg, #ffffff30 0 100%); }
+  .label { font-family: var(--display); font-weight: 600; font-size: 30px; letter-spacing: .16em; text-transform: uppercase; color: var(--cyan); }
+  .lead { font-size: 50px; line-height: 1.25; font-weight: 500; }
+  .lead b { font-weight: 700; }
+  .note { font-size: 30px; line-height: 1.35; color: var(--muted); }
+
+  /* Caja con muesca para cifras, estilo "20 JULY" */
+  .stat .in { padding: 26px 44px 28px; }
+  .stat { --c: 44px; }
+  .num { font-family: var(--display); font-weight: 800; color: var(--cream); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .num.xxl { font-size: 250px; }
+  .num.xl { font-size: 128px; }
+  .num.m { font-size: 84px; }
+  .num small { font-size: .5em; letter-spacing: 0; }
+  .stat .label { margin-top: 14px; font-size: 26px; letter-spacing: .12em; }
+
+  /* Barras segmentadas, como la pila de marcas amarillas del póster */
+  .bar { height: 54px; display: flex; overflow: hidden; background: color-mix(in srgb, var(--cyan) 18%, transparent);
+    -webkit-mask: repeating-linear-gradient(90deg, #000 0 16px, transparent 16px 22px);
+            mask: repeating-linear-gradient(90deg, #000 0 16px, transparent 16px 22px); }
+  .bar i { display: block; height: 100%; width: var(--w); background: var(--cyan); }
+  .bar i.y { background: var(--yellow); }
+  .legend { display: flex; justify-content: space-between; margin-top: 18px; font-size: 38px; color: var(--muted); }
+  .legend b { color: var(--cream); font-weight: 700; }
+
+  .rows { display: flex; flex-direction: column; gap: 32px; }
+  .row .h { display: flex; justify-content: space-between; align-items: baseline; gap: 26px; }
+  .row .h > span { color: var(--muted); font-size: 34px; line-height: 1.2; max-width: 560px; text-align: right; }
+  .row .bar { margin-top: 16px; height: 40px; }
+
+  .pill { display: inline-flex; gap: 10px; }
+  .pill button { font-family: var(--display); font-weight: 600; font-size: 28px; letter-spacing: .06em; color: var(--cyan); background: none; border: 3px solid var(--cyan); padding: 14px 26px; cursor: pointer; text-transform: uppercase; }
+  .pill button[aria-pressed="true"] { background: var(--yellow); border-color: var(--yellow); color: var(--navy); }
+
+  /* Marco de la diapositiva: decoración, franja de datos e indicador de avance */
+  .deco-tl { position: absolute; left: 60px; top: 74px; width: 64px; height: 18px; background: var(--cyan); }
+  .deco-tr { position: absolute; right: 60px; top: 74px; display: flex; gap: 14px; }
+  .deco-tr i { display: block; width: 52px; height: 18px; background: var(--pink); }
+  .strip-a { position: absolute; left: 90px; right: 90px; bottom: 440px; display: flex; justify-content: space-between; align-items: center; }
+  .strip-a .label { font-size: 26px; }
+  .pager { display: flex; gap: 18px; align-items: center; border: 3px solid var(--yellow); padding: 14px 22px; }
+  .pager b { display: block; width: 26px; height: 26px; position: relative; }
+  .pager .on { background: var(--yellow); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .pager .off::before, .pager .off::after { content: ""; position: absolute; left: 50%; top: -3px; width: 4px; height: 32px; background: color-mix(in srgb, var(--yellow) 40%, transparent); transform: translateX(-50%) rotate(45deg); }
+  .pager .off::after { transform: translateX(-50%) rotate(-45deg); }
+  .pager .ring { border: 4px solid color-mix(in srgb, var(--yellow) 40%, transparent); border-radius: 50%; }
+  .strip-b { position: absolute; left: 90px; right: 90px; bottom: 300px; border: 3px solid var(--yellow); display: flex; align-items: stretch; }
+  .strip-b .ico { flex: 0 0 120px; border-right: 3px solid var(--yellow); display: grid; place-items: center; padding: 14px; }
+  .px { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 68px; height: 68px; }
+  .px i { background: var(--cyan); } .px i.z { background: transparent; }
+  .strip-b .tx { padding: 14px 24px; font-size: 25px; line-height: 1.4; letter-spacing: .04em; text-transform: uppercase; color: var(--yellow); }
+  .strip-b .tx span { color: var(--cream); }
+
+  /* Animaciones: solo en modo visor (body.live). La exportación estática no las usa. */
+  body.live .slide.on [data-in] { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--d, 0) * 1ms); }
+  body.live .slide.on .bar i { animation: grow 1.3s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--d, 0) * 1ms + 250ms); transform-origin: left; }
+  @keyframes rise { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .bar i { transition: width .6s cubic-bezier(.2,.7,.2,1); }
+  @media (prefers-reduced-motion: reduce) { body.live .slide.on [data-in], body.live .slide.on .bar i { animation: none; } }
+  body:not(.live) .pill { display: none; }
+
+  #progress { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 6px; width: min(92vw, 520px); z-index: 5; }
+  body.live #progress { display: flex; }
+  #progress button { flex: 1; height: 8px; border: 0; padding: 0; background: #ffffff33; cursor: pointer; position: relative; overflow: hidden; }
+  #progress button::after { content: ""; position: absolute; inset: 0; background: var(--cyan); transform: scaleX(0); transform-origin: left; transition: transform .35s; }
+  #progress button.done::after, #progress button.cur::after { transform: scaleX(1); }
+  #progress button.cur::after { background: var(--yellow); }
+  #palettes { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); display: none; gap: 8px; z-index: 6; flex-wrap: wrap; justify-content: center; max-width: 96vw; }
+  body.live #palettes { display: flex; }
+  #palettes button { display: flex; align-items: center; gap: 6px; padding: 7px 10px; background: #000000b0; color: #fff; border: 2px solid #ffffff44; border-radius: 8px; font: 600 12px/1 var(--text); cursor: pointer; }
+  #palettes button[aria-pressed="true"] { border-color: #fff; }
+  #palettes i { display: block; width: 12px; height: 12px; border-radius: 3px; }
+  #rec { position: fixed; top: 26px; right: 12px; display: none; z-index: 6; padding: 8px 12px; background: #000000b0; color: #fff; border: 2px solid #ffffff44; border-radius: 8px; font: 600 12px/1 var(--text); cursor: pointer; }
+  body.live #rec { display: block; }
+  #toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); max-width: 88vw; padding: 12px 16px; background: #000000d0; color: #fff; border-radius: 10px; font: 600 14px/1.35 var(--text); text-align: center; z-index: 9; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  #toast.on { opacity: 1; }
+  /* Modo grabación: solo se ve la presentación */
+  body.rec #progress, body.rec #palettes, body.rec #hint, body.rec #rec { display: none !important; }
+  #hint { position: fixed; bottom: 12px; left: 0; right: 0; text-align: center; color: #ffffff88; font-size: 14px; display: none; pointer-events: none; }
+  body.live #hint { display: block; }
+</style>
+</head>
+<body>
+
+<div id="progress" aria-label="Progreso"></div>
+<div id="palettes" role="group" aria-label="Paleta de colores"></div>
+<button id="rec" type="button" aria-label="Modo grabación: oculta los menús y pide pantalla completa">⛶ Modo grabación</button>
+<div id="toast" role="status"></div>
+<div id="hint">Toca a la derecha o desliza para avanzar · ← → teclado</div>
+
+<div id="stage">
+
+<section class="slide" id="s1">
+  <div class="kicker" data-in style="--d:0">Steam Next Fest · oct 2026</div>
+  <div class="pink cut" data-in style="--d:150">
+    <h1 class="ttl xl">¿Next Fest<span class="band">o Slop Fest?</span></h1>
+  </div>
+  <div class="frame stat cut" data-in style="--d:450"><div class="in">
+    <div class="num xl"><span data-count="7322" data-group="1">7.322</span> <small>juegos</small></div>
+    <div class="label">Revisados · declaraciones de IA</div>
+  </div></div>
+  <div class="lilac cut" data-in style="--d:700">
+    <p class="lead">Revisé lo que sus estudios <b>declaran</b> sobre inteligencia artificial.</p>
+  </div>
+</section>
+
+<section class="slide" id="s2">
+  <div class="kicker" data-in style="--d:0">El panorama</div>
+  <div class="pink cut" data-in style="--d:100">
+    <div class="num xxl"><span id="bigNum" data-count="35.4" data-dec="0">35</span><small> %</small></div>
+    <div class="ttl lg" style="margin-top:26px">declara usar IA generativa</div>
+  </div>
+  <div data-in style="--d:450">
+    <div class="bar" role="img" aria-label="Porcentaje de juegos que declaran IA"><i id="bar2i" style="--w:35.4%"></i></div>
+    <div class="legend"><span><b id="lgA">2.515</b> declaran</span><span><b id="lgB">4.580</b> no</span></div>
+  </div>
+  <div class="pill" data-in style="--d:650" role="group" aria-label="Base del porcentaje">
+    <button type="button" id="base1" aria-pressed="true">7.095 comprobables</button>
+    <button type="button" id="base2" aria-pressed="false">7.322 totales</button>
+  </div>
+  <p class="note" id="foot2" data-in style="--d:800">227 juegos (sobre todo contenido adulto) no se pudieron comprobar en Steam.</p>
+</section>
+
+<section class="slide" id="s3">
+  <div class="kicker" data-in style="--d:0">¿Quién la usa?</div>
+  <div class="pink cut" data-in style="--d:100">
+    <h2 class="ttl lg">No es un puñado de estudios inundando el evento</h2>
+  </div>
+  <div class="frame stat cut" data-in style="--d:450"><div class="in">
+    <div class="num xl" style="color:var(--cyan)"><span data-count="2443" data-group="1">2.443</span></div>
+    <div class="label">Estudios distintos declaran IA</div>
+  </div></div>
+  <div class="frame stat cut" data-in style="--d:700"><div class="in">
+    <div class="num xl"><span data-count="96">96</span><small> %</small></div>
+    <div class="label">Presenta un solo juego</div>
+  </div></div>
+  <p class="note" data-in style="--d:900">Los 100 estudios con más juegos con IA suman solo el 9,3 % de los que declaran.</p>
+</section>
+
+<section class="slide" id="s4">
+  <div class="kicker" data-in style="--d:0">¿Cómo la usan?</div>
+  <div class="pink cut" data-in style="--d:100">
+    <h2 class="ttl lg">No es un uso superficial</h2>
+  </div>
+  <div class="frame cut" style="--c:52px" data-in><div class="in" style="padding:38px 48px">
+    <div class="rows">
+      <div class="row" data-in style="--d:350"><div class="h"><div class="num m"><span data-count="71">71</span><small> %</small></div><span>toca contenido central: arte, 3D, música, voz, texto o código</span></div>
+        <div class="bar"><i style="--w:71.3%"></i></div></div>
+      <div class="row" data-in style="--d:650"><div class="h"><div class="num m"><span data-count="45">45</span><small> %</small></div><span>arte dentro del juego</span></div>
+        <div class="bar"><i style="--w:45.4%"></i></div></div>
+      <div class="row" data-in style="--d:950"><div class="h"><div class="num m"><span data-count="4">4</span><small> %</small></div><span>solo arte de tienda o marketing</span></div>
+        <div class="bar"><i class="y" style="--w:3.7%"></i></div></div>
+    </div>
+  </div></div>
+  <p class="note" data-in style="--d:1200">Porcentajes sobre los 2.515 juegos que declaran IA.</p>
+</section>
+
+<section class="slide" id="s5">
+  <div class="kicker" data-in style="--d:0">Para cerrar</div>
+  <div class="pink cut" data-in style="--d:150">
+    <h2 class="ttl xl">Usar IA no hace malo a un juego</h2>
+  </div>
+  <div class="lilac cut" data-in style="--d:900">
+    <p class="lead">No declararla <b>no significa</b> que no se use.</p>
+  </div>
+  <div class="frame stat cut" data-in style="--d:1700"><div class="in">
+    <div class="label">Lo que cambia</div>
+    <div class="ttl lg" style="margin-top:16px">Cada demo te pide más criterio</div>
+  </div></div>
+</section>
+
+</div>
+
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const slides = [...document.querySelectorAll(".slide")];
+  const stage = document.getElementById("stage");
+  const live = !params.has("static");
+  const fmt = (n, dec) => n.toLocaleString("de-DE", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  let cur = Math.min(Math.max((parseInt(params.get("s"), 10) || 1) - 1, 0), slides.length - 1);
+  let raf = 0;
+
+  /* Paletas: poster (original) y clásicas retro arcade de los 80/90. Se aplican como variables CSS. */
+  const PALETTES = {
+    poster:   { name: "Póster",        navy: "#0a0a2c", pink: "#ee2a64", cream: "#f2ead8", cyan: "#35c4f2", yellow: "#f6b82e", lilac: "#c98cc0", muted: "#a8a4d4", onPink: "#f2ead8" },
+    synth:    { name: "Synthwave 80s", navy: "#120458", pink: "#ff2e97", cream: "#fff3fb", cyan: "#00f0ff", yellow: "#ffe600", lilac: "#b967ff", muted: "#b8a6ff", onPink: "#fff3fb" },
+    pacman:   { name: "Pac-Man",       navy: "#000000", pink: "#ff1a1a", cream: "#ffffff", cyan: "#2f7bff", yellow: "#ffff00", lilac: "#ffb8ff", muted: "#ffb8ae", onPink: "#ffffff" },
+    gameboy:  { name: "Game Boy",      navy: "#0f380f", pink: "#306230", cream: "#9bbc0f", cyan: "#8bac0f", yellow: "#9bbc0f", lilac: "#8bac0f", muted: "#8bac0f", onPink: "#9bbc0f" },
+    cga:      { name: "CGA",           navy: "#000000", pink: "#ff55ff", cream: "#ffffff", cyan: "#55ffff", yellow: "#ffff55", lilac: "#55ffff", muted: "#aaaaaa", onPink: "#000000" },
+    arcade90: { name: "Arcade 90s",    navy: "#10184a", pink: "#ff6a13", cream: "#fff4d6", cyan: "#29d3ff", yellow: "#ffd91a", lilac: "#7be04a", muted: "#9fb0ff", onPink: "#10184a" },
+  };
+  let pal = PALETTES[params.get("p")] ? params.get("p") : "poster";
+  if (!params.has("p")) { try { const q = localStorage.getItem("nf-palette"); if (PALETTES[q]) pal = q; } catch (e) {} }
+  function applyPalette(id) {
+    const t = PALETTES[id]; if (!t) return;
+    pal = id;
+    const r = document.documentElement.style;
+    for (const [k, v] of Object.entries({ navy: t.navy, pink: t.pink, cream: t.cream, cyan: t.cyan, yellow: t.yellow, lilac: t.lilac, muted: t.muted, "on-pink": t.onPink })) r.setProperty("--" + k, v);
+    document.body.style.background = t.navy;
+    document.querySelectorAll("#palettes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === id)));
+    syncUrl(); try { localStorage.setItem("nf-palette", id); } catch (e) {}
+  }
+  function syncUrl() {
+    const q = new URLSearchParams(location.search); q.set("s", cur + 1); q.set("p", pal);
+    try { history.replaceState(null, "", "?" + q.toString()); } catch (e) {}
+  }
+
+  /* Modo grabación: oculta los menús, pide pantalla completa y se sale manteniendo pulsado (o con Esc). */
+  const recBtn = document.getElementById("rec"), toastEl = document.getElementById("toast");
+  let toastT = 0, usedFs = false, suppressClick = false;
+  function toast(msg, ms) {
+    toastEl.textContent = msg; toastEl.classList.add("on");
+    clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("on"), ms);
+  }
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+  function enterRec() {
+    document.body.classList.add("rec");
+    const el = document.documentElement, rf = el.requestFullscreen || el.webkitRequestFullscreen;
+    usedFs = false;
+    if (rf && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+      try { const r = rf.call(el); usedFs = true; if (r && r.catch) r.catch(() => { usedFs = false; }); } catch (e) { usedFs = false; }
+    }
+    show(0); fit();
+    const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+    if (!usedFs && !standalone) toast("Para ocultar la barra del navegador: Compartir → Añadir a pantalla de inicio y abre la presentación desde ahí. Mantén pulsado para salir.", 5500);
+    else toast("Mantén pulsado para salir", 2200);
+  }
+  function exitRec() {
+    document.body.classList.remove("rec");
+    if (fsEl()) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
+    fit();
+  }
+  const inRec = () => document.body.classList.contains("rec");
+  recBtn.addEventListener("click", e => { e.stopPropagation(); enterRec(); });
+  ["fullscreenchange", "webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, () => { if (usedFs && inRec() && !fsEl()) exitRec(); }));
+  let lpT = 0, lpX = 0, lpY = 0;
+  addEventListener("pointerdown", e => {
+    if (!inRec()) return;
+    lpX = e.clientX; lpY = e.clientY;
+    lpT = setTimeout(() => { suppressClick = true; exitRec(); setTimeout(() => { suppressClick = false; }, 400); }, 900);
+  });
+  addEventListener("pointermove", e => { if (lpT && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 12) { clearTimeout(lpT); lpT = 0; } });
+  ["pointerup", "pointercancel"].forEach(ev => addEventListener(ev, () => { clearTimeout(lpT); lpT = 0; }));
+  addEventListener("contextmenu", e => { if (inRec()) e.preventDefault(); });
+
+  /* Marco común: decoración, franja de datos, indicador de avance y fuente */
+  const PX = "1101111101101111".split("").map(c => `<i class="${c === "1" ? "" : "z"}"></i>`).join("");
+  slides.forEach((s, k) => {
+    const pager = slides.map((_, j) => `<b class="${j <= k ? "on" : j === slides.length - 1 ? "ring" : "off"}"></b>`).join("");
+    s.insertAdjacentHTML("beforeend", `
+      <div class="deco-tl"></div><div class="deco-tr"><i></i><i></i><i></i></div>
+      <div class="strip-a"><span class="label">Declarado | no verificado</span><div class="pager" aria-hidden="true">${pager}</div></div>
+      <div class="strip-b"><div class="ico"><div class="px">${PX}</div></div>
+        <div class="tx">Fuente: Steam · captura 25 oct 2026<br><span>Categorías asignadas con modelos de lenguaje</span></div></div>`);
+  });
+
+  /* Escala el lienzo 1080x1920 a la pantalla (modo visor). En modo estático mide 1:1. */
+  function fit() {
+    const k = live ? Math.min(innerHeight / 1920, innerWidth / 1080) : 1;
+    stage.style.transform = `scale(${k})`;
+    stage.style.marginLeft = live ? `${-540 * k}px` : "0";
+    stage.style.marginTop = live ? `${Math.max(0, (innerHeight - 1920 * k) / 2)}px` : "0";
+    if (!live) stage.style.left = "0";
+  }
+
+  /* Cuenta animada de 0 al valor final; con reduced-motion o modo estático, directo. */
+  function countUp(slide) {
+    cancelAnimationFrame(raf);
+    const els = [...slide.querySelectorAll("[data-count]")];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    els.forEach(el => { el.textContent = el.dataset.group ? fmt(0, 0) : fmt(0, +el.dataset.dec || 0); });
+    if (!live || reduce) { els.forEach(el => setNum(el, +el.dataset.count)); return; }
+    const t0 = performance.now(), dur = 1300;
+    const step = now => {
+      const p = Math.min((now - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      els.forEach(el => setNum(el, +el.dataset.count * e));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+  function setNum(el, v) {
+    const dec = +el.dataset.dec || 0;
+    el.textContent = el.dataset.group ? fmt(Math.round(v), 0) : fmt(dec ? v : Math.round(v), dec);
+  }
+
+  function show(i) {
+    cur = Math.min(Math.max(i, 0), slides.length - 1);
+    slides.forEach((s, k) => s.classList.toggle("on", k === cur));
+    /* Reinicia las animaciones CSS de la diapositiva que entra */
+    const s = slides[cur];
+    s.querySelectorAll("[data-in], .bar i").forEach(n => { n.style.animation = "none"; void n.offsetWidth; n.style.animation = ""; });
+    countUp(s);
+    document.querySelectorAll("#progress button").forEach((b, k) => {
+      b.classList.toggle("done", k < cur); b.classList.toggle("cur", k === cur);
+    });
+    syncUrl();
+  }
+
+  /* Selector de base del porcentaje (diapositiva 2) */
+  const bases = {
+    base1: { pct: 35.4, foot: "227 juegos (sobre todo contenido adulto) no se pudieron comprobar en Steam.", a: "2.515", b: "4.580" },
+    base2: { pct: 34.3, foot: "Sobre los 7.322 juegos del evento; 227 sin comprobar cuentan como «no declaran».", a: "2.515", b: "4.807" },
+  };
+  function setBase(id) {
+    const b = bases[id], num = document.getElementById("bigNum");
+    num.dataset.count = b.pct; num.dataset.dec = "1"; num.textContent = fmt(b.pct, 1);
+    document.getElementById("bar2i").style.setProperty("--w", b.pct + "%");
+    document.getElementById("foot2").textContent = b.foot;
+    document.getElementById("lgA").textContent = b.a; document.getElementById("lgB").textContent = b.b;
+    for (const k of Object.keys(bases)) document.getElementById(k).setAttribute("aria-pressed", String(k === id));
+  }
+  document.getElementById("base1").addEventListener("click", e => { e.stopPropagation(); setBase("base1"); });
+  document.getElementById("base2").addEventListener("click", e => { e.stopPropagation(); setBase("base2"); });
+
+  if (live) {
+    document.body.classList.add("live");
+    const pb = document.getElementById("palettes");
+    for (const [id, t] of Object.entries(PALETTES)) {
+      const b = document.createElement("button"); b.type = "button"; b.dataset.id = id; b.title = t.name;
+      b.innerHTML = `<i style="background:${t.pink}"></i><i style="background:${t.cyan}"></i><i style="background:${t.yellow}"></i>${t.name}`;
+      b.addEventListener("click", e => { e.stopPropagation(); applyPalette(id); });
+      pb.appendChild(b);
+    }
+    const bar = document.getElementById("progress");
+    slides.forEach((_, k) => {
+      const b = document.createElement("button"); b.setAttribute("aria-label", `Diapositiva ${k + 1}`);
+      b.addEventListener("click", () => show(k)); bar.appendChild(b);
+    });
+    /* Toque: el 30 % izquierdo retrocede, el resto avanza. Los botones conservan su función. */
+    addEventListener("click", e => {
+      if (e.target.closest("button") || suppressClick) return;
+      show(cur + (e.clientX < innerWidth * 0.3 ? -1 : 1));
+    });
+    addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(cur + 1); }
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") show(cur - 1);
+      else if (e.key === "Escape" && inRec()) exitRec();
+    });
+    let x0 = null;
+    addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+    addEventListener("touchend", e => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+  }
+  addEventListener("resize", fit);
+  applyPalette(pal); fit(); show(cur);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Next Fest IA Explorer</title>
+<meta name="description" content="Explora el uso declarado de IA generativa en los juegos de Steam Next Fest (octubre 2026): filtros por categoría, género, estudio y más.">
+<meta name="theme-color" content="#10184a">
+<script>document.documentElement.dataset.theme="arcade"</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="deco" aria-hidden="true"><span class="cy"></span><span class="or"><i></i><i></i><i></i></span></div>
+  <header class="top">
+    <div>
+      <h1>IA declarada en Steam Next Fest</h1>
+      <p id="subtitle">Cargando datos…</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="btn-about" type="button">Sobre los datos</button>
+    </div>
+  </header>
+
+  <section class="filters" aria-label="Filtros">
+    <details id="fbox" class="fbox">
+      <summary><span>Filtros</span> <span id="fcount" class="fcount"></span></summary>
+      <div class="filters-grid" id="filters"></div>
+    </details>
+    <div class="chips" id="chips" aria-live="polite"></div>
+    <div class="hint" id="filter-hint"></div>
+  </section>
+
+  <main id="main" aria-live="polite">
+    <section class="kpis" id="kpis" aria-label="Resumen"></section>
+    <section class="grid" id="charts" aria-label="Gráficos"></section>
+    <section class="card table-card" aria-label="Listado de juegos">
+      <div class="table-bar">
+        <h2 id="table-title">Juegos</h2>
+        <div class="top-actions">
+          <button class="btn" id="btn-share" type="button">Copiar enlace con filtros</button>
+          <button class="btn primary" id="btn-csv" type="button">Descargar CSV</button>
+        </div>
+      </div>
+      <div class="tscroll"><table class="games" id="games"></table></div>
+      <div class="pager" id="pager"></div>
+    </section>
+  </main>
+  <footer id="foot"></footer>
+</div>
+
+<div class="tip" id="tip" role="tooltip"></div>
+
+<dialog id="about">
+  <h2>Sobre los datos</h2>
+  <ul>
+    <li><b>Hechos (Steam):</b> el texto del “AI Generated Content Disclosure” es literal, tal como lo publicó cada estudio. Que un juego aparezca como “declara IA” sale solo de que esa sección exista en su página de Steam.</li>
+    <li><b>Análisis (LLM):</b> las categorías de uso, el tipo de generación y el resumen los interpretó un modelo de lenguaje a partir de ese texto. Pueden contener errores; cada ficha muestra el texto original para comprobarlo.</li>
+    <li><b>Lo declarado no es lo verificado.</b> Los datos reflejan lo que cada estudio dice, no lo que realmente usa. Un juego sin disclosure no prueba que no use IA.</li>
+    <li><b>Estado desconocido:</b> algunas páginas (sobre todo contenido adulto) exigen iniciar sesión y no pudieron comprobarse; no se cuentan como “sin IA”.</li>
+    <li><b>Tipo de generación:</b> “No claro” significa que el texto no dice si el contenido se generó antes del lanzamiento o en tiempo real.</li>
+    <li>Este panel no mide calidad ni parecido entre juegos, y no etiqueta ningún juego como copia o de baja calidad.</li>
+  </ul>
+  <p class="small" id="about-meta"></p>
+  <button class="btn primary" id="about-close" type="button">Cerrar</button>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
